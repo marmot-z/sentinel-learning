@@ -83,8 +83,8 @@ class CtSph {
 `This class holds metadata of current invocation`。
 
 其内部维护了以下几个字段：
-- entranceNode：当前调用链的入口节点
-- curEntry：当前调用链的当前entry
+- entranceNode：当前调用链的根节点
+- Entry：当前调用链的 Entry
 - node：与当前entry所对应的curNode
 - origin：当前调用链的调用源
 

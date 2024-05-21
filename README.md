@@ -7,8 +7,8 @@
 
 ## 目录
 - [sentinel core](./sentinel-core.md)
-  - slot chain（处理链）
-  - principle（核心概念）
+  - [concept（核心概念）](./concept.md)
+  - [slot chain（处理链）](./slot-chain.md) 
   - sliding window（滑动窗口，统计时使用数据结构）
 - sentinel SPI
 - sentinel adapter

@@ -66,35 +66,9 @@ entranceNode 代表当前调用链路入口，每种 context（即 name 不同�
 
 ```java
 /**
- * 一次调用时进入同 context 不同资源时的调用树
- *    Constants.ROOT
- *          |
- *          | child
- *          ↓
- *  context1.entranceNode
- *          |
- *          | child
- *          ↓
- *  resource1 defaultNode
- *          |
- *          | child
- *          ↓
- *  resource2 defaultNode
- *  
- *  
- *  不同调用时进入同 context 不同资源时的调用树
- *                  Constants.ROOT
- *                      |
- *                      | child
- *                      ↓
- *              context1.entranceNode
- *                  /        \
- *           child /          \ child
- *                /            \
- *  resource1 defaultNode   resource2 defaultNode
- *  
- *  
- *  不同调用时进入不同 context 不同资源时的调用树
+ * 在进入资源时（如下述代码），sentinel 会按照资源进入顺序构建出对应的调用树。
+ * 调用树在进入资源时创建，直至程序退出
+ *
  *                          Constants.ROOT
  *                              /       \
  *                      child  /         \ child
@@ -105,6 +79,22 @@ entranceNode 代表当前调用链路入口，每种 context（即 name 不同�
  *                /            \                      \
  *  resource1 defaultNode   resource2 defaultNode   resource1 defaultNode
  */
+public class Demo {
+    public static void main(String[] args) {
+        ContextUtil.enter("context1");
+        try (Entry entry = SphU.entry("resource1")) {
+            // do something1 ...
+        }
+        try (Entry entry = SphU.entry("resource2")) {
+            // do something2 ...
+        }
+
+        ContextUtil.enter("context2");
+        try (Entry entry = SphU.entry("resource1")) {
+            // do something1 ...
+        }
+    }
+}
 ```
 
 ### curEntry
@@ -123,18 +113,13 @@ entry 代表当前请求访问资源的凭证，当进入多个资源（相同�
  */
 class Demo {
     public static void main(String[] args) {
-        Entry entry1, entry2;
-        
-        try {
-            entry1 = SphU.entry("resource1");
-            entry2 = SphU.entry("resource2");
-            // do something
+        // 退出资源和进入资源的顺序相反，先进后出
+        try (Entry entry1 = SphU.entry("resource1")) {
+            try (Entry entry2 = SphU.entry("resource2")) {
+                // do something ...
+            }
         } catch (BlockException e) {
             e.printStackTrace();
-        } finally {
-            // 退出顺序和进入顺序相反，先进后出
-            if (entry2 != null) entry2.exit();
-            if (entry1 != null) entry1.exit();
         }
     }
 }

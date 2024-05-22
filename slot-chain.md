@@ -1,6 +1,6 @@
 # slot chain
 
-在前面的章节，我们通过自己动手实现，了解了 sentinel 中的一些概念以及实现难点。接下来我们通过阅读源码 + 调试的方式来
+在前面的章节，我们通过自己动手实现和阅读[概念章节](./concept.md)，了解了 sentinel 中的一些概念以及实现难点。接下来我们通过阅读源码 + 调试的方式来
 了解 sentinel 实现和原理。 我们以官方示例为切入口，开启 sentinel 的源码阅读之旅。
 
 ```java
@@ -18,6 +18,8 @@ class Demo {
     }
 }
 ```
+
+# 进入资源
 
 在这段代码中，我们可以看到除了定义规则之外，最核心的代码就是 `SphU.entry` 方法了。在 entry 方法中，第一步就是为资源创建对应的 wrapper 实例
 
@@ -529,10 +531,42 @@ public class DegradeSlot {
 }
 ```
 
+# 退出资源
+
 上述就是 SphU.entry （即进入资源）的大概逻辑了，那 entry.exit（即退出资源）是又是什么样的流程呢？
 
+在 sentinel 中申请多个 entry 时，entry 之间会形成一个双向链表。在 entry.exit 时，此链表用于保证退出顺序与申请顺序相反，并且能确保所有 entry 退出完毕后正常释放相关对象。
+
 ```java
-public class CtEntry {
+class CtEntry {
+
+    /**
+     * 创建 entry 时调用此方法
+     */
+    private void setUpEntryFor(Context context) {
+        /*
+         * 申请多个 entry 时，entry.parent 会指向上一个申请的 entry
+         * 同时 context.curEntry 指向当前 entry，形成下面的 entry 双向链表
+         * 
+         *                            context.curEntry
+         *                                  |
+         *                                  ↓
+         *            +------+ child   +------+
+         *            |      | ---->   |      |
+         * null <---- |entry1|         |entry2| ------> null
+         *     parent |      | <----   |      | child
+         *            +------+ parent  +------+
+         */
+        this.parent = context.getCurEntry();
+        if (parent != null) {
+            ((CtEntry) parent).child = this;
+        }
+        context.setCurEntry(this);
+    }
+
+    /**
+     * 退出 entry 时调用此方法
+     */
     protected void exitForContext(Context context, int count, Object... args) throws ErrorEntryFreeException {
         if (context != null) {
             // Null context should exit without clean-up.
@@ -541,12 +575,12 @@ public class CtEntry {
             }
 
             // 当进入多个资源时，context.curEntry 总是指向最后申请资源的 entry
-            // 如果此时 context.curEntry 不等于当前 entry，代表当前退出的是先申请 entry
+            // 如果此时 context.curEntry 不等于当前 entry，代表当前退出的不是最后申请的 entry
             // 违背了 entry 释放顺序原则（与进入顺序相反），此时会抛出进入和退出的顺序不一致的异常
             if (context.getCurEntry() != this) {
                 String curEntryNameInContext = context.getCurEntry() == null ? null
                         : context.getCurEntry().getResourceWrapper().getName();
-                // 释放此 entry 之前申请的 entry 
+                // 释放之前申请的 entry 
                 CtEntry e = (CtEntry) context.getCurEntry();
                 while (e != null) {
                     e.exit(count, args);
@@ -571,7 +605,7 @@ public class CtEntry {
                     ((CtEntry) parent).child = null;
                 }
                 
-                // 如果 parent 为空，则代表本次调用的 entry 全部退出完毕
+                // 如果 parent 为空，则代表本次申请的 entry 全部退出完毕
                 // 释放 context 对象
                 if (parent == null) {
                     if (ContextUtil.isDefaultContext(context)) {
@@ -585,3 +619,5 @@ public class CtEntry {
     }
 }
 ```
+
+以上就是 sentinel 进入、退出资源的大概逻辑了，下章我们将介绍数据如何统计以及对应的数据结构。

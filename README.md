@@ -9,7 +9,7 @@
 - [sentinel core](./sentinel-core.md)
   - [concept（核心概念）](./concept.md)
   - [slot chain（处理链）](./slot-chain.md) 
-  - sliding window（滑动窗口，统计时使用数据结构）
+  - [sliding window（滑动窗口，统计时使用数据结构）](./sliding-window.md)
 - sentinel SPI
 - sentinel adapter
 - sentinel dashboard

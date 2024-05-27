@@ -1,0 +1,62 @@
+@startuml
+!theme toy
+class StatisticsSlot {
++ void entry()
+}
+
+class DefaultNode {
+- StatisticsNode clusterNode
+- ArrayMetric rollingCounterInSecond
+- ArrayMetric rollingCounterInMinute
++ void addPassRequest()
+}
+
+class ArrayMetric {
+- LeapArray data
+}
+
+class LeapArray {
+# AtomicReferenceArray<WindowWrap> array
+# WindowWrap currentWindow(int milis)
+}
+
+class WindowWrap {
+- long windowLengthInMs
+- long windowStart
+- T value
+}
+
+class MetricBucket {
+- LongAddr[] counters
+}
+
+StatisticsSlot::entry --> DefaultNode::addPassRequest
+DefaultNode *-- ArrayMetric
+ArrayMetric *-- LeapArray
+LeapArray *-- WindowWrap
+WindowWrap *-- MetricBucket
+
+note left of StatisticsSlot::entry
+  调用 defaultNode.addPassRequest 等方法
+end note
+note left of DefaultNode
+    内部有
+    * rollingCounterInMinute（分钟级
+    * rollingCounterInSecond（秒级
+    两种时间维度的统计数据结构
+end note
+note right of DefaultNode::clusterNode
+  持有资源的全局统计节点 clusterNode
+end note
+note left of ArrayMetric : 存储资源统计数据的数据结构
+note left of LeapArray : 这里维护了一个数组，用于实现滑动窗口
+note right of LeapArray : 找到当前时间对应的窗口
+note left of WindowWrap : 代表数组上的一个窗口
+note right of WindowWrap::windowLengthInMs
+窗口的长度，即一个窗口可以记录多少 ms 内的数据
+end note
+note right of WindowWrap::windowStart
+窗口的开始时间戳，用来确认指定时间是否处于窗口区间
+end note
+note left of MetricBucket : 存储对应数据的桶，如 passCount、BlockCount
+@enduml

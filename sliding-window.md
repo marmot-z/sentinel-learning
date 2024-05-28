@@ -82,7 +82,7 @@ class LeapArray {
 }
 ```
 
-通过上面的代码以及注释我们可以了解到如何寻找当前窗口以及使得窗口滑动，如果不太清楚也没关系，结合下面的示意图我们来回顾一下上述代码的逻辑：
+通过上面的代码以及注释我们可以了解到如何寻找当前窗口以及使得窗口滑动，如果不太清楚也没关系，结合下面的示意图我们来加深对上述代码的理解：
 
 1，如果当前时间的窗口还未创建，则直接创建一个新的窗口
 
@@ -100,3 +100,68 @@ class LeapArray {
 
 ![](./images/sliding-window4.png)
 
+## 并发统计的线程安全
+
+获取到当前窗口，我们就可以往窗口写入数据了，那么 sentinel 中是如何保证高并发情况下统计数据的线程安全呢？
+
+```java
+class MetricBucket {
+    private final LongAdder[] counters;
+    
+    public void addPass(int n) {
+        add(MetricEvent.PASS, n);
+    }
+
+    public MetricBucket add(MetricEvent event, long n) {
+        counters[event.ordinal()].add(n);
+        return this;
+    }
+}
+```
+
+通过上面的 `MetricBucket.addPass` 方法我们可以看到，最终 passCount、blockCount 都存储于 LongAdder 类型的 counters 变量中。这个 LongAdder 是啥东西？它能保证并发时写入的线程安全吗？为啥不用 AtomicLong？
+
+是的，通过阅读 LongAdder 源码的注释，我们会发现此类设计之初就是为了解决并发写入大这种场景的。
+
+![](./images/longadder-comment.png)
+
+通过咨询我们的好朋友 chat-GPT，可以得知其和 AtomicLong 的主要区别如下：
+
+![](./images/longadder-vs-atomiclong.png)
+
+哦，原来 LongAdder 底层有一个 cell 数组用来多线程的分布写入，避免并发写入冲突，这是一个用空间换时间的策略。让我们来浅浅的阅读一下 LongAdder 源码：
+
+```java
+public class LongAdder extends Striped64 implements Serializable {
+    
+    public void add(long x) {
+        Cell[] cs; long b, v; int m; Cell c;
+        // 尝试更新 base（base 是一个 long 值）
+        if ((cs = cells) != null || !casBase(b = base, b + x)) {
+            // 获取当前线程的 index，用于更新数组中对应的 cell
+            int index = getProbe();
+            boolean uncontended = true;
+            // 如果更新 base 值失败，则尝试更新 cell
+            if (cs == null || (m = cs.length - 1) < 0 ||
+                    // cell 为空，或者更新 cell 值未冲突
+                    (c = cs[index & m]) == null ||
+                    !(uncontended = c.cas(v = c.value, v + x)))
+                // 多线程更新 cell 时冲突，尝试更新其他 cell
+                // 如果冲突严重，则扩容 cell 数组
+                longAccumulate(x, null, uncontended, index);
+        }
+    }
+
+    public long sum() {
+        // 将 base 和 cell 数组中的值进行汇总
+        Cell[] cs = cells;
+        long sum = base;
+        if (cs != null) {
+            for (Cell c : cs)
+                if (c != null)
+                    sum += c.value;
+        }
+        return sum;
+    }
+}
+```

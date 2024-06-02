@@ -11,10 +11,10 @@
   - [sentinel 中的核心概念](./concept.md)
   - [sentinel 进入、退出资源](./slot-chain.md) 
   - [sentinel 如何统计资源访问情况](./sliding-window.md)
-- sentinel SPI
+- [sentinel 中的扩展](./sentinel-spi.md)
 - sentinel adapter
 - sentinel dashboard
-- sentinel extension（规则的实例化）
+- [规则的持久化和动态更新](./dynamic-datasource.md)
 
 ## 参考
 - [sentinel-tutorial](https://github.com/all4you/sentinel-tutorial)

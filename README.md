@@ -13,7 +13,7 @@
   - [sentinel 如何统计资源访问情况](./sliding-window.md)
 - [sentinel 中的扩展](./sentinel-spi.md)
 - [sentinel 集成其他框架，如何快速定义资源](./sentinel-integrated.md)
-- sentinel dashboard
+- [sentinel 控制台](./sentinel-dashboard.md)
 - [规则的持久化和动态更新](./dynamic-datasource.md)
 
 ## 参考

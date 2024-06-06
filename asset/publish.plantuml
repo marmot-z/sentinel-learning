@@ -1,0 +1,38 @@
+@startuml
+start
+
+group server
+:更新流控规则,
+发起 /v1/flow/rule 请求;
+
+: 1，规则检查
+2，规则保存到 server 本地
+3，推送规则到 client;
+floating note left: FlowControllerV1#apiAddFlowRule
+note right
+ 规则默认只保存到 server 内存中，
+不会做持久化存储
+end note
+
+:根据 client 地址发送 http 请求;
+floating note left: SentinelApiClient#executeCommand
+end group
+
+group client
+:socket 接收到 http 请求，解析请求;
+floating note left: ServerThread#run
+
+:根据请求 commandName 获取对应的 handler;
+floating note left: HttpEventTask#run
+note right
+handler 和 commandName 对应关系由
+SimpleHttpCommandCenter 在 sentinel
+初始化时创建
+end note
+
+:handler 中更新本地的流控规则;
+floating note left: ModifyRulesCommandHandler#handle
+end group
+
+stop
+@enduml

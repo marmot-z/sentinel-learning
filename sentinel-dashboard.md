@@ -47,7 +47,7 @@ server 接收到了心跳信息，会将心跳信息中的机器信息添加到�
 
 根据上图我们可以看到核心部分就是根据请求的 commandName 找到对应的 handler。
 
-在 sentinel 中先通过 SPI 机制找到所有的 CommandHandler 实现类，然后通过解析类上的 @CommandMapping 注解获取 commandName 和 handler 的对应关系。
+在 sentinel 中会通过 SPI 机制找到所有的 CommandHandler 实现类，然后通过解析类上的 @CommandMapping 注解获取 commandName 和 handler 的对应关系。
 
 ```java
 @CommandMapping(name = "setRules", desc = "modify the rules, accept param: type={ruleType}&data={ruleJson}")
@@ -58,6 +58,23 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
 
 ## data fetch
 
-如何拉取监控信息
-如何拉取链路信息
-如何获取规则等信息
+在了解了 client 如何注册到 server 以及 server 如何将事件推送到 client 后。接下来我们来了解 server 主动从 client 中拉取数据的。
+
+在 server 中主动拉取的 client 信息有以下几种：
+- 「实时监控」页面的监控统计信息
+- 「簇点链路」页面的调用链路信息
+- 各个规则模块的配置规则信息
+
+**监控信息拉取**
+
+![](./images/fetch-metrics.png)
+
+sentinel 中的 metrics 持久化逻辑请看[此章](./metrics-persistence.md)
+
+### 如何拉取链路信息
+
+![](./images/fetch-resource.png)
+
+### 如何获取规则等信息
+
+![](./images/fetch-rules.png)

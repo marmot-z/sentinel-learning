@@ -2,11 +2,13 @@
 
 metrics 文件格式
 
-![](./images/metrices-file-level.png)
+![](./images/metrics-file-level.png)
+![](./images/idx-file-format.png)
+![](./images/metrics-file-format.png)
 
 metrics 的写入
 
-![](./images/write-metrices.png)
+![](./images/metrics-write.png)
 
 metrics 的读取
 

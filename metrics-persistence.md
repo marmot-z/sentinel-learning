@@ -22,7 +22,7 @@ sentinel metrics 文件的默认存储于 `${userHome}/log/csp` 目录下。文�
 
 每个 metrics 文件对应一个 idx 文件
 
-![](./images/metrics-file-level.png)
+![](./images/metrics-file-hierarchy.png)
 
 metrics 文件内部每一行记录一条统计数据，数据格式为：
 

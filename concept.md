@@ -1,4 +1,4 @@
-# concept
+# sentinel 中的几个核心概念
 
 sentinel-core 中有几个核心概念:
 - resource
@@ -52,11 +52,16 @@ sentinel-core 中对资源限流是通过一个个 slot（槽）来完成的，�
 - origin
 - async
 
+接下来，我们将一一了解各属性的含义。
+
 ### name
-context 名称，但其更像是类型（type），以 spring mvc 项目接入 sentinel 为例，默认
-会有两个 context：sentinel_default_context 和 sentinel_spring_web_context，或许是为了支持在运行中对资源进行更细粒度的控制。
+名称，用于区分不同 context。以 spring mvc 项目接入 sentinel 为例，默认
+会有两个 context：sentinel_default_context 和 sentinel_spring_web_context。
 
 ![](./images/multi-context.png)
+
+resource 可以在多个 context 中重复定义
+
 ![](./images/resource-context.png)
 
 ### entranceNode
@@ -163,6 +168,9 @@ public class CtEntry {
 
 是否为异步进入资源
 
+
+context 中各属性之间的关系示意图如下：
+
 ![](./images/context.png)
 
 ## Node
@@ -175,3 +183,11 @@ Node 用于保存资源的实时统计数据，如：passQps、blockQps、rt 等
 - 每种 context 下的每种资源对应一个 DefaultNode 实例
 - 每种资源对应一个 ClusterNode 实例
 - 每种 context 对应一个 EntranceNode 实例
+
+# 总结
+在本章，我们了解了 sentinel 中几个核心的概念：
+- resource，代表一个被保护的资源，sentinel 通过对资源定义规则来实现限流、熔断等操作
+- slot，代表一个处理单元（比如：统计资源访问情况、限流、熔断等操作），sentinel 通过 slot 责任链来实现对资源的限流、熔断等操作
+- context，代表当前调用的上下文，记录当前调用的一些附加信息，如：调用链路入口（entranceNode）、凭证（entry）、调用来源等
+- entry，代表当前请求访问资源的凭证
+- node，用于记录资源实时统计数据，如：passQps、blockQps、rt 等值

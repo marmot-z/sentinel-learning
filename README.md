@@ -6,11 +6,11 @@
 本项目解析的 sentinel 代码版本为 1.8.7，可能与您阅读的代码实现有部分出入，但实现原理应该基本相同。
 
 ## 目录
-- [前传](./preamble.md)
+- [什么是 sentinel？](./preamble.md)
 - [自己来实现 sentinel](./sentinel-core.md)
-  - [sentinel 中的核心概念](./concept.md)
-  - [sentinel 进入、退出资源](./slot-chain.md) 
-  - [sentinel 如何统计资源访问情况](./sliding-window.md)
+- [sentinel 中的核心概念](./concept.md)
+- [sentinel 进入、退出资源](./slot-chain.md) 
+- [sentinel 如何统计资源访问情况](./sliding-window.md)
 - [sentinel 中的扩展](./sentinel-spi.md)
 - [sentinel 集成其他框架，如何快速定义资源](./sentinel-integrated.md)
 - [sentinel 控制台](./sentinel-dashboard.md)

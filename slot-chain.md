@@ -1,7 +1,7 @@
 # slot chain
 
-在前面的章节，我们通过自己动手实现和阅读[概念章节](./concept.md)，了解了 sentinel 中的一些概念以及实现难点。接下来我们通过阅读源码 + 调试的方式来
-了解 sentinel 实现和原理。 我们以官方示例为切入口，开启 sentinel 的源码阅读之旅。
+在前面的[自己实现 sentinel](./sentinel-core.md), [sentinel 中的核心概念](./concept.md) 两个章节中，我们了解了 sentinel 中的一些概念以及实现难点。
+接下来我们通过阅读源码 + 调试的方式来了解 sentinel 实现和原理。 我们以官方示例为切入口，开启 sentinel 的源码阅读之旅。
 
 ```java
 class Demo {
@@ -19,9 +19,9 @@ class Demo {
 }
 ```
 
-# 进入资源
+## 进入资源
 
-在这段代码中，我们可以看到除了定义规则之外，最核心的代码就是 `SphU.entry` 方法了。在 entry 方法中，第一步就是为资源创建对应的 wrapper 实例
+在上述代码中，我们可以看到除了定义规则之外，最核心的代码就是 `SphU.entry` 方法了。在 entry 方法中，第一步就是为资源创建对应的 wrapper 实例
 
 ```java
 public class CtSph {
@@ -111,14 +111,16 @@ public final class SlotChainProvider {
 在前面的[概念章节](./concept.md)中我们了解到 processSlotChain 内部是以责任链的模式运行，那么其内部到底是怎样运行的呢？都有哪些逻辑呢？
 
 我们可以通过一张官方的示意图来一探究竟：
+
 ![](https://user-images.githubusercontent.com/9434884/69955207-1e5d3c00-1538-11ea-9ab2-297efff32809.png)
+
 在 processSlotChain 中有一个特定顺序排列的 slot 单链表，请求依次通过不同的 slot 来完成不同的功能。大致完成的功能如下：
 1. 先创建数据结构用于数据统计，然后检查规则
 2. 先检查优先级高的规则，再检查优先级低的规则
 
 接下来我们按照调用顺序依次解读对应的 slot 代码，了解其实现的功能。 
 
-processSlotChain 中的责任链实现。每个 slot 都持有下个 slot 的引用，通过 next.transformEntry 和 next.exit 来触发资源进入和退出的对应操作。
+processSlotChain 中的责任链实现。每个 slot 都持有下个 slot 的引用，通过 next.transformEntry 和 next.exit 方法来触发资源进入和退出的对应操作。
 ```java
 public abstract class AbstractLinkedProcessorSlot<T> {
     
@@ -148,7 +150,7 @@ public abstract class AbstractLinkedProcessorSlot<T> {
 }
 ```
 
-## NodeSelectorSlot
+### NodeSelectorSlot
 在进入资源前，NodeSelectorSlot 为每种 context 下的每个资源创建一个 defaultNode 实例，并维护一颗全局的调用树（每个 context 对应一颗调用树）
 ```java
 public class NodeSelectorSlot {
@@ -210,7 +212,7 @@ public class Context {
 }
 ``` 
 
-## ClusterSlotBuilder
+### ClusterSlotBuilder
 在进入资源前，ClusterSlotBuilder 为每种资源创建一个 clusterNode，用于记录资源全局的统计数据
 
 ```java
@@ -243,7 +245,7 @@ public class ClusterBuilderSlot {
 }
 ```
 
-## LogSlot
+### LogSlot
 在进入和退出资源时，LogSlot 会记录相关异常信息
 ```java
 public class LogSlot {
@@ -275,7 +277,7 @@ public class LogSlot {
 }
 ```
 
-## StatisticsSlot
+### StatisticsSlot
 在进入资源会后，StatisticsSlot 会统计各个维度（资源、特定来源、系统）的 passQps、threadNum 等值；
 
 在退出资源时，StatisticsSlot 会统计各个维度（资源、特定来源、系统）的 rt、successCount、exceptionQps 等值
@@ -358,7 +360,7 @@ public class StatisticsSlot {
 }
 ```
 
-## AuthoritySlot
+### AuthoritySlot
 进入资源前，AuthoritySlot 会对请求来源进行白/黑名单检查（AuthorityRule），是则通过，否则拒绝
 
 ```java
@@ -395,7 +397,7 @@ public class AuthoritySlot {
 }
 ```
 
-## SystemSlot
+### SystemSlot
 进入资源前，SystemSlot 会检查当前系统情况是否低于配置的系统规则（SystemRule），是则通过，否则拒绝
 
 ```java
@@ -423,7 +425,7 @@ public class SystemSlot {
 }
 ```
 
-## FlowSlot
+### FlowSlot
 进入资源前，FlowSlot 检查当前资源情况是否低于配置的流控规则（FlowRule），是则通过，否则拒绝
 ```java
 public class FlowSlot {
@@ -444,7 +446,7 @@ public class FlowSlot {
 }
 ```
 
-## DefaultCircuitBreakerSlot
+### DefaultCircuitBreakerSlot
 进入资源前，DefaultCircuitBreakerSlot 会检查当前资源情况是否低于配置的熔断规则（DefaultCircuitBreakerRule），是则通过，否则拒绝
 ```java
 public class DefaultCircuitBreakerSlot {
@@ -491,7 +493,7 @@ public class DefaultCircuitBreakerSlot {
 }
 ```
 
-## DegradeSlot
+### DegradeSlot
 进入资源前，DegradeSlot 会检查当前资源情况是否低于配置的降级规则（DegradeRule），是则通过，否则拒绝
 ```java
 public class DegradeSlot {
@@ -531,7 +533,7 @@ public class DegradeSlot {
 }
 ```
 
-# 退出资源
+## 退出资源
 
 上述就是 SphU.entry （即进入资源）的大概逻辑了，那 entry.exit（即退出资源）是又是什么样的流程呢？
 
@@ -620,4 +622,7 @@ class CtEntry {
 }
 ```
 
-以上就是 sentinel 进入、退出资源的大概逻辑了，下章我们将介绍数据如何统计以及对应的数据结构。
+# 总结
+在本章节中，我们通过阅读代码了解了 sentinel 进入、退出资源的逻辑。
+
+[Sentinel 工作主流程基本原理](./https://sentinelguard.io/zh-cn/docs/basic-implementation.html)

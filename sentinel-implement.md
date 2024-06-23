@@ -1,4 +1,5 @@
-# sentinel core
+# 自行实现 sentinel
+
 ## 简介
 sentinel-core 模块提供了资源定义、规则定义以及流量拦截等功能。其可以与应用集成后独立使用，是 sentinel 的核心基础。
 

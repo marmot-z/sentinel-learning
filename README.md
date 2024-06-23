@@ -7,14 +7,14 @@
 
 ## 目录
 - [什么是 sentinel？](./preamble.md)
-- [自己来实现 sentinel](./sentinel-core.md)
+- [自己来实现 sentinel](./sentinel-implement.md)
 - [sentinel 中的核心概念](./concept.md)
 - [sentinel 进入、退出资源](./slot-chain.md) 
 - [sentinel 如何统计资源访问情况](./sliding-window.md)
 - [sentinel 中的扩展](./sentinel-spi.md)
 - [sentinel 集成其他框架，如何快速定义资源](./sentinel-integrated.md)
 - [sentinel 控制台](./sentinel-dashboard.md)
-- [规则的持久化和动态更新](./dynamic-datasource.md)
+- [sentinel 规则的动态更新](./dynamic-datasource.md)
 
 ## 参考
 - [sentinel-tutorial](https://github.com/all4you/sentinel-tutorial)

@@ -212,7 +212,7 @@ public class Context {
 }
 ``` 
 
-### ClusterSlotBuilder
+### ClusterBuilderSlot
 在进入资源前，ClusterSlotBuilder 为每种资源创建一个 clusterNode，用于记录资源全局的统计数据
 
 ```java
@@ -623,6 +623,23 @@ class CtEntry {
 ```
 
 # 总结
-在本章节中，我们通过阅读代码了解了 sentinel 进入、退出资源的逻辑。
+在本章节中，我们通过阅读代码了解了 sentinel 进入和退出资源的逻辑。
 
-[Sentinel 工作主流程基本原理](./https://sentinelguard.io/zh-cn/docs/basic-implementation.html)
+sentinel 进入资源前主要是通过 slot 责任链来实现的，责任链中的 slot 职责主要有两种：
+1，节点分配和统计访问（QPS 等）情况
+- NodeSelectorSlot 为资源创建 node 实例，记录资源在当前 context 的访问信息
+- ClusterBuilderSlot 为资源创建全局的 node 实例，记录资源全局的访问信息
+- LogSlot 记录日志
+- StatisticsSlot 统计资源的访问信息
+
+2，各维度的规则检查
+- AuthoritySlot 访问来源的黑白名单检查
+- SystemSlot 系统规则的检查
+- FlowSlot 流控规则的检查
+- DefaultCircuitBreakerSlot 熔断规则的检查
+- DegradeSlot 降级规则的检查
+
+
+sentinel 中维护了当前进入的 entry 链来正确退出资源，当所有的 entry 有序退出时，才释放对应的对象（context 等）。
+
+如果对上述内容有疑惑，请阅读官方文档的 [Sentinel 工作主流程基本原理](./https://sentinelguard.io/zh-cn/docs/basic-implementation.html) 章节进行补充。

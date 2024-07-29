@@ -1,6 +1,6 @@
 # sentinel 中的几个核心概念
 
-sentinel-core 中有几个核心概念:
+本章我们将正式开始学习 sentinel，在开始之前，我们先了解下 sentinel 中的几个核心概念，方便后续理解相关实现。在 sentinel-core 中有以下几个核心概念：
 - resource
 - slot
 - context

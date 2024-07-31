@@ -16,6 +16,9 @@ sentinel 的核心概念和底层原理。
 - [sentinel 集成其他框架](./sentinel-integrated.md)
 - [sentinel 控制台](./sentinel-dashboard.md)
 - [sentinel 规则的动态更新](./dynamic-datasource.md)
+- [sentinel 网关限流原理]()
+- [sentinel实践-QPS检测失效]()
+- [sentinel实践-网关的线程数检测]()
 
 ## 贡献
 

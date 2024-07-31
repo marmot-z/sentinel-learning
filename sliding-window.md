@@ -165,3 +165,7 @@ public class LongAdder extends Striped64 implements Serializable {
     }
 }
 ```
+
+# 总结
+本文我们了解了 sentinel 统计资源访问情况的原理和基础数据结构。sentinel 在滑动窗口的基础上构建了个环形的数组，在保证数据平滑的统计时，又节省了
+大量的空间。同时我们还简要介绍了保证并发统计数据正常的 `LongAddr` 类，该类使用空间换时间的策略，减少并发更新冲突，保证数据准确。
